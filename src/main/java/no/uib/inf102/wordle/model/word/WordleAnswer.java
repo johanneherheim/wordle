@@ -1,5 +1,6 @@
 package no.uib.inf102.wordle.model.word;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -84,18 +85,34 @@ public class WordleAnswer {
      * @return
      */
     public static WordleWord matchWord(String guess, String answer) {
+        ArrayList<Character> answerCopy = new ArrayList<Character>(answer.length());
+        for (char c : answer.toCharArray()) {
+            answerCopy.add(c);
+        }
+
         int wordLength = answer.length();
         if (guess.length() != wordLength)
             throw new IllegalArgumentException("Guess and answer must have same number of letters but guess = " + guess
                     + " and answer = " + answer);
 
-        // TODO: Implement me :)
-
         AnswerType[] feedback = new AnswerType[wordLength];
         for (int i = 0; i < wordLength; i++) {
-            feedback[i] = AnswerType.WRONG;
+            char letter = guess.charAt(i);
+            if (answerCopy.contains(letter)) {
+                if (answerCopy.indexOf(letter) == i) {
+                    feedback[i] = AnswerType.CORRECT;
+                    answerCopy.set(answerCopy.indexOf(letter), '-');
+                } else if (letter == guess.charAt(answerCopy.indexOf(letter))) {
+                    feedback[i] = AnswerType.WRONG;
+                } else {
+                    feedback[i] = AnswerType.MISPLACED;
+                    answerCopy.set(answerCopy.indexOf(letter), '-');
+                }
+            } else {
+                feedback[i] = AnswerType.WRONG;
+            }
         }
 
-        return new WordleWord(guess,feedback);
+        return new WordleWord(guess, feedback);
     }
 }
