@@ -1,5 +1,6 @@
 package no.uib.inf102.wordle.model.word;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -91,26 +92,29 @@ public class WordleAnswer {
 
         char[] answerCopy = answer.toCharArray();
         AnswerType[] feedback = new AnswerType[wordLength];
+        HashMap<Character, Integer> map = new HashMap<>();
+
+        for (char c : answerCopy) {
+            map.put(c, map.getOrDefault(c, 0) + 1);
+        }
 
         for (int i = 0; i < wordLength; i++) {
-            if (guess.charAt(i) == answerCopy[i]) {
+            char letter = guess.charAt(i);
+            if (letter == answerCopy[i]) {
                 feedback[i] = AnswerType.CORRECT;
+                map.put(letter, map.get(letter) - 1);
                 answerCopy[i] = '-';
             }
         }
 
         for (int i = 0; i < wordLength; i++) {
             if (feedback[i] == null) {
-                boolean isMisplaced = false;
-                for (int j = 0; j < wordLength; j++) {
-                    if (answerCopy[j] == guess.charAt(i)) {
-                        feedback[i] = AnswerType.MISPLACED;
-                        answerCopy[j] = '-';
-                        isMisplaced = true;
-                        break;
-                    }
-                }
-                if (!isMisplaced) {
+                char letter = guess.charAt(i);
+                int count = map.getOrDefault(letter, 0);
+                if (count > 0) {
+                    feedback[i] = AnswerType.MISPLACED;
+                    map.put(letter, map.get(letter) - 1);
+                } else {
                     feedback[i] = AnswerType.WRONG;
                 }
             }
