@@ -65,49 +65,55 @@ public class WordleWordList {
 
 		List<String> newPossibleWords = new ArrayList<>();
 
-		HashMap<Character, Integer> misplaced = new HashMap<>();
-		HashMap<Integer, Character> correctResult = new HashMap<>();
+		for (String s : possibleAnswers) {
+			boolean isWrong = false;
+			int i = 0;
 
-		int i = 0;
-		for (WordleCharacter wc : feedback) {
-			if (wc.answerType == AnswerType.MISPLACED) {
-				misplaced.put(wc.letter, misplaced.getOrDefault(wc.letter, 0) + 1);
-			}
-			if (wc.answerType == AnswerType.CORRECT) {
-				correctResult.put(i, wc.letter);
-			}
-			i++;
-		}
-
-		for (String answer : possibleAnswers) {
-			newPossibleWords.add(answer);
-			boolean isRemoved = false;
-
-			char[] answerArray = answer.toCharArray();
-
-			HashMap<Character, Integer> frequency = new HashMap<>();
-			for (Character c : answerArray) {
-				frequency.put(c, frequency.getOrDefault(c, 0) + 1);
+			HashMap<Character, Integer> freqMap = new HashMap<>();
+			for (Character ch : s.toCharArray()) {
+				freqMap.put(ch, freqMap.getOrDefault(ch, 0) + 1);
 			}
 
-			for (Character c : misplaced.keySet()) {
-				if (!(misplaced.get(c) == frequency.getOrDefault(c, 0)) &&
-						!newPossibleWords.isEmpty()) {
-					newPossibleWords.remove(newPossibleWords.size() - 1);
-					isRemoved = true;
-				}
-			}
+			for (WordleCharacter wc : feedback) {
+				char letter = wc.letter;
+				AnswerType answerType = wc.answerType;
 
-			if (!isRemoved) {
-				for (int j : correctResult.keySet()) {
-					if (!(answerArray[j] == correctResult.get(j))) {
-						newPossibleWords.remove(newPossibleWords.size() - 1);
+				if (answerType == AnswerType.CORRECT) {
+					if (s.charAt(i) != letter) {
+						isWrong = true;
+						break;
 					}
+					freqMap.put(letter, freqMap.get(letter) - 1);
+				} else if (answerType == AnswerType.MISPLACED) {
+					if (s.charAt(i) == letter || freqMap.getOrDefault(letter, 0) <= 0) {
+						isWrong = true;
+						break;
+					}
+					freqMap.put(letter, freqMap.get(letter) - 1);
 				}
+				i++;
+			}
+			if (!isWrong) {
+				newPossibleWords.add(s);
 			}
 		}
 		possibleAnswers = newPossibleWords;
+	}
 
+	public static String replaceCharAt(String s, int index, char newChar) {
+		// Check if the index is valid
+		if (index < 0 || index >= s.length()) {
+			throw new IllegalArgumentException("Index out of bounds");
+		}
+
+		// Convert string to StringBuilder for modification
+		StringBuilder sb = new StringBuilder(s);
+
+		// Replace the character at the specified index
+		sb.setCharAt(index, newChar);
+
+		// Return the modified string
+		return sb.toString();
 	}
 
 	/**
