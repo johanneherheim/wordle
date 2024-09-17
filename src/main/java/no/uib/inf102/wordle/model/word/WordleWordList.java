@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import no.uib.inf102.wordle.model.Dictionary;
 
@@ -61,7 +62,52 @@ public class WordleWordList {
 	 * @param feedback
 	 */
 	public void eliminateWords(WordleWord feedback) {
-		// TODO: Implement me :)
+
+		List<String> newPossibleWords = new ArrayList<>();
+
+		HashMap<Character, Integer> misplaced = new HashMap<>();
+		HashMap<Integer, Character> correctResult = new HashMap<>();
+
+		int i = 0;
+		for (WordleCharacter wc : feedback) {
+			if (wc.answerType == AnswerType.MISPLACED) {
+				misplaced.put(wc.letter, misplaced.getOrDefault(wc.letter, 0) + 1);
+			}
+			if (wc.answerType == AnswerType.CORRECT) {
+				correctResult.put(i, wc.letter);
+			}
+			i++;
+		}
+
+		for (String answer : possibleAnswers) {
+			newPossibleWords.add(answer);
+			boolean isRemoved = false;
+
+			char[] answerArray = answer.toCharArray();
+
+			HashMap<Character, Integer> frequency = new HashMap<>();
+			for (Character c : answerArray) {
+				frequency.put(c, frequency.getOrDefault(c, 0) + 1);
+			}
+
+			for (Character c : misplaced.keySet()) {
+				if (!(misplaced.get(c) == frequency.getOrDefault(c, 0)) &&
+						!newPossibleWords.isEmpty()) {
+					newPossibleWords.remove(newPossibleWords.size() - 1);
+					isRemoved = true;
+				}
+			}
+
+			if (!isRemoved) {
+				for (int j : correctResult.keySet()) {
+					if (!(answerArray[j] == correctResult.get(j))) {
+						newPossibleWords.remove(newPossibleWords.size() - 1);
+					}
+				}
+			}
+		}
+		possibleAnswers = newPossibleWords;
+
 	}
 
 	/**
