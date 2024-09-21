@@ -71,22 +71,6 @@ public class WordleWordList {
 		possibleAnswers = newPossibleAnswers;
 	}
 
-	public static String replaceCharAt(String s, int index, char newChar) {
-		// Check if the index is valid
-		if (index < 0 || index >= s.length()) {
-			throw new IllegalArgumentException("Index out of bounds");
-		}
-
-		// Convert string to StringBuilder for modification
-		StringBuilder sb = new StringBuilder(s);
-
-		// Replace the character at the specified index
-		sb.setCharAt(index, newChar);
-
-		// Return the modified string
-		return sb.toString();
-	}
-
 	/**
 	 * Returns the amount of possible answers in this WordleWordList
 	 * 
