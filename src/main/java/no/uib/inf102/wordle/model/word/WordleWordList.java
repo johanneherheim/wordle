@@ -62,42 +62,13 @@ public class WordleWordList {
 	 * @param feedback
 	 */
 	public void eliminateWords(WordleWord feedback) {
-
-		List<String> newPossibleWords = new ArrayList<>();
-
+		List<String> newPossibleAnswers = new ArrayList<>();
 		for (String s : possibleAnswers) {
-			boolean isWrong = false;
-			int i = 0;
-
-			HashMap<Character, Integer> freqMap = new HashMap<>();
-			for (Character ch : s.toCharArray()) {
-				freqMap.put(ch, freqMap.getOrDefault(ch, 0) + 1);
-			}
-
-			for (WordleCharacter wc : feedback) {
-				char letter = wc.letter;
-				AnswerType answerType = wc.answerType;
-
-				if (answerType == AnswerType.CORRECT) {
-					if (s.charAt(i) != letter) {
-						isWrong = true;
-						break;
-					}
-					freqMap.put(letter, freqMap.get(letter) - 1);
-				} else if (answerType == AnswerType.MISPLACED) {
-					if (s.charAt(i) == letter || freqMap.getOrDefault(letter, 0) <= 0) {
-						isWrong = true;
-						break;
-					}
-					freqMap.put(letter, freqMap.get(letter) - 1);
-				}
-				i++;
-			}
-			if (!isWrong) {
-				newPossibleWords.add(s);
+			if (WordleWord.isPossibleWord(s, feedback)) {
+				newPossibleAnswers.add(s);
 			}
 		}
-		possibleAnswers = newPossibleWords;
+		possibleAnswers = newPossibleAnswers;
 	}
 
 	public static String replaceCharAt(String s, int index, char newChar) {
