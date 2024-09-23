@@ -24,40 +24,61 @@ public class FrequencyStrategy implements IStrategy {
 
     @Override
     public String makeGuess(WordleWord feedback) {
-        HashMap<Character, Integer> frequencyMap = getMostUsedLetters(dictionary);
-        String bestGuess = findBestGuess(frequencyMap, dictionary.getGuessWordsList());
-        return bestGuess;
+        // fjerner ikke ord ved første gjett
+        if (feedback != null) {
+            guesses.eliminateWords(feedback);
+        }
+        // finner beste ord ut fra frequency i ordene som er igjen
+        HashMap<Character, Integer>[] frequency = getFrequencyForEachPos();
+        String guess = findBestWordFromWordlist(frequency, guesses.possibleAnswers());
+
+        return guess;
     }
 
-    private String findBestGuess(HashMap<Character, Integer> freqMap, List<String> wordlist) {
+    private String findBestWordFromWordlist(HashMap<Character, Integer>[] frequency, List<String> possibleAnswers) {
+        // her lagrer jeg beste score og word til å sammenligne resten
+        String bestWord = null;
+        int bestScore = 0;
 
-        if (wordlist.isEmpty())
-            return "";
+        for (String word : possibleAnswers) {
+            int score = 0;
 
-        String bestWord = wordlist.get(0);
-        int bestScore = Integer.MIN_VALUE;
-
-        for (String s : wordlist) {
-            int tempScore = 0;
-            for (Character c : s.toCharArray()) {
-                tempScore += freqMap.getOrDefault(c, 0);
+            // plusser sammen antal Integer fra frequency hashmap-et
+            for (int i = 0; i < word.length(); i++) {
+                char letter = word.charAt(i);
+                score += frequency[i].getOrDefault(letter, 0);
             }
-            if (tempScore > bestScore) {
-                bestScore = tempScore;
-                bestWord = s;
+
+            // lagrer scoren hvis den er høyere
+            if (score > bestScore) {
+                bestScore = score;
+                bestWord = word;
             }
         }
+
         return bestWord;
     }
 
-    private HashMap<Character, Integer> getMostUsedLetters(Dictionary dictionary) {
-        HashMap<Character, Integer> freqMap = new HashMap<>();
-        for (String s : dictionary.getAnswerWordsList()) {
-            for (Character c : s.toCharArray()) {
-                freqMap.put(c, freqMap.getOrDefault(c, 0) + 1);
+    private HashMap<Character, Integer>[] getFrequencyForEachPos() {
+        int wordLength = guesses.possibleAnswers().get(0).length(); // Antall bokstaver i hvert ord
+
+        @SuppressWarnings("unchecked")
+        HashMap<Character, Integer>[] frequency = new HashMap[wordLength];
+
+        // Lager frekvenstabeller for hver posisjon
+        for (int i = 0; i < wordLength; i++) {
+            frequency[i] = new HashMap<>();
+        }
+
+        // Gå gjennom alle mulige svar og teller bokstavfrekvensen for hver pos
+        for (String word : guesses.possibleAnswers()) {
+            for (int i = 0; i < word.length(); i++) {
+                char letter = word.charAt(i);
+                frequency[i].put(letter, frequency[i].getOrDefault(letter, 0) + 1);
             }
         }
-        return freqMap;
+
+        return frequency;
     }
 
     @Override
