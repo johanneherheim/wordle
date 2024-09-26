@@ -28,14 +28,21 @@ public class FrequencyStrategy implements IStrategy {
         if (feedback != null) {
             guesses.eliminateWords(feedback);
         }
-        // finner beste ord ut fra frequency i ordene som er igjen
-        HashMap<Character, Integer>[] frequency = getFrequencyForEachPos();
-        String guess = findBestWordFromWordlist(frequency, guesses.possibleAnswers());
+
+        List<String> possibleWords = guesses.possibleAnswers();
+
+        if (possibleWords.size() == 1) {
+            return possibleWords.get(0);
+        }
+
+        String guess = findBestWord(possibleWords);
 
         return guess;
     }
 
-    private String findBestWordFromWordlist(HashMap<Character, Integer>[] frequency, List<String> possibleAnswers) {
+    private String findBestWord(List<String> possibleAnswers) {
+        HashMap<Character, Integer>[] frequency = getFrequencyForEachPos(possibleAnswers);
+
         // her lagrer jeg beste score og word til å sammenligne resten
         String bestWord = null;
         int bestScore = 0;
@@ -59,19 +66,17 @@ public class FrequencyStrategy implements IStrategy {
         return bestWord;
     }
 
-    private HashMap<Character, Integer>[] getFrequencyForEachPos() {
-        int wordLength = guesses.possibleAnswers().get(0).length(); // Antall bokstaver i hvert ord
-
-        @SuppressWarnings("unchecked")
+    HashMap<Character, Integer>[] getFrequencyForEachPos(List<String> possibleWords) {
+        int wordLength = possibleWords.get(0).length();
         HashMap<Character, Integer>[] frequency = new HashMap[wordLength];
 
-        // Lager frekvenstabeller for hver posisjon
+        // Initialize frequency maps for each position
         for (int i = 0; i < wordLength; i++) {
             frequency[i] = new HashMap<>();
         }
 
-        // Gå gjennom alle mulige svar og teller bokstavfrekvensen for hver pos
-        for (String word : guesses.possibleAnswers()) {
+        // Populate the frequency map for each position in the words
+        for (String word : possibleWords) {
             for (int i = 0; i < word.length(); i++) {
                 char letter = word.charAt(i);
                 frequency[i].put(letter, frequency[i].getOrDefault(letter, 0) + 1);
