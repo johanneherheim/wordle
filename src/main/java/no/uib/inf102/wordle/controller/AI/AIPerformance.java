@@ -25,10 +25,10 @@ public class AIPerformance {
     public static void main(String[] args) {
         // Strategies
         List<IStrategy> strategies = new ArrayList<>();
-        strategies.add(new RandomStrategy(dictionary));
-        strategies.add(new EliminateStrategy(dictionary));
+        // strategies.add(new RandomStrategy(dictionary));
+        // strategies.add(new EliminateStrategy(dictionary));
         strategies.add(new FrequencyStrategy(dictionary));
-        // strategies.add(new MyStrategy(dictionary));
+        strategies.add(new MyStrategy(dictionary));
 
         Map<IStrategy, AIStatistics> stats = new HashMap<>();
         System.out.println("\nStrategies running...");

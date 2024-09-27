@@ -23,35 +23,35 @@ public class FrequencyStrategy implements IStrategy {
     }
 
     @Override
-    public String makeGuess(WordleWord feedback) {
+    public String makeGuess(WordleWord feedback) { // O(m * k)
         // fjerner ikke ord ved første gjett
         if (feedback != null) {
-            guesses.eliminateWords(feedback);
+            guesses.eliminateWords(feedback); // O(m * k)
         }
 
-        List<String> possibleWords = guesses.possibleAnswers();
+        List<String> possibleWords = guesses.possibleAnswers(); // O(1)
 
         if (possibleWords.size() == 1) {
-            return possibleWords.get(0);
+            return possibleWords.get(0); // O(1)
         }
 
-        String guess = findBestWord(possibleWords);
+        String guess = findBestWord(possibleWords); // O(m*k)
 
         return guess;
     }
 
-    private String findBestWord(List<String> possibleAnswers) {
-        HashMap<Character, Integer>[] frequency = getFrequencyForEachPos(possibleAnswers);
+    private String findBestWord(List<String> possibleAnswers) { // O(m*k)
+        HashMap<Character, Integer>[] frequency = getFrequencyForEachPos(possibleAnswers); // O(m*k)
 
         // her lagrer jeg beste score og word til å sammenligne resten
         String bestWord = null;
         int bestScore = 0;
 
-        for (String word : possibleAnswers) {
+        for (String word : possibleAnswers) { // O(m)
             int score = 0;
 
             // plusser sammen antal Integer fra frequency hashmap-et
-            for (int i = 0; i < word.length(); i++) {
+            for (int i = 0; i < word.length(); i++) { // O(k)
                 char letter = word.charAt(i);
                 score += frequency[i].getOrDefault(letter, 0);
             }
@@ -66,18 +66,18 @@ public class FrequencyStrategy implements IStrategy {
         return bestWord;
     }
 
-    HashMap<Character, Integer>[] getFrequencyForEachPos(List<String> possibleWords) {
+    HashMap<Character, Integer>[] getFrequencyForEachPos(List<String> possibleWords) { // O(m*k)
         int wordLength = possibleWords.get(0).length();
         HashMap<Character, Integer>[] frequency = new HashMap[wordLength];
 
         // Initialize frequency maps for each position
-        for (int i = 0; i < wordLength; i++) {
+        for (int i = 0; i < wordLength; i++) { // O(k)
             frequency[i] = new HashMap<>();
         }
 
         // Populate the frequency map for each position in the words
-        for (String word : possibleWords) {
-            for (int i = 0; i < word.length(); i++) {
+        for (String word : possibleWords) { // O(m)
+            for (int i = 0; i < word.length(); i++) { // O(k)
                 char letter = word.charAt(i);
                 frequency[i].put(letter, frequency[i].getOrDefault(letter, 0) + 1);
             }

@@ -85,41 +85,41 @@ public class WordleAnswer {
      * @return
      */
     public static WordleWord matchWord(String guess, String answer) {
-        int wordLength = answer.length();
-        if (guess.length() != wordLength)
+        int wordLength = answer.length(); // O(1)
+        if (guess.length() != wordLength) // O(1)
             throw new IllegalArgumentException("Guess and answer must have same number of letters but guess = " + guess
                     + " and answer = " + answer);
 
-        char[] answerCopy = answer.toCharArray();
-        AnswerType[] feedback = new AnswerType[wordLength];
-        HashMap<Character, Integer> map = new HashMap<>();
+        char[] answerCopy = answer.toCharArray(); // O(k)
+        AnswerType[] feedback = new AnswerType[wordLength]; // O(1)
+        HashMap<Character, Integer> map = new HashMap<>(); // O(1)
 
-        for (char c : answerCopy) {
-            map.put(c, map.getOrDefault(c, 0) + 1);
+        for (char c : answerCopy) { // O(k)
+            map.put(c, map.getOrDefault(c, 0) + 1); // O(1)
         }
 
-        for (int i = 0; i < wordLength; i++) {
-            char letter = guess.charAt(i);
-            if (letter == answerCopy[i]) {
-                feedback[i] = AnswerType.CORRECT;
-                map.put(letter, map.get(letter) - 1);
-                answerCopy[i] = '-';
+        for (int i = 0; i < wordLength; i++) { // O(k)
+            char letter = guess.charAt(i); // O(1)
+            if (letter == answerCopy[i]) { // O(1)
+                feedback[i] = AnswerType.CORRECT; // O(1)
+                map.put(letter, map.get(letter) - 1); // O(1)
+                answerCopy[i] = '-'; // O(1)
             }
         }
 
-        for (int i = 0; i < wordLength; i++) {
-            if (feedback[i] == null) {
-                char letter = guess.charAt(i);
-                int count = map.getOrDefault(letter, 0);
-                if (count > 0) {
-                    feedback[i] = AnswerType.MISPLACED;
-                    map.put(letter, map.get(letter) - 1);
+        for (int i = 0; i < wordLength; i++) { // O(k)
+            if (feedback[i] == null) { // O(1)
+                char letter = guess.charAt(i); // O(1)
+                int count = map.getOrDefault(letter, 0); // O(1)
+                if (count > 0) { // O(1)
+                    feedback[i] = AnswerType.MISPLACED; // O(1)
+                    map.put(letter, map.get(letter) - 1); // O(1)
                 } else {
-                    feedback[i] = AnswerType.WRONG;
+                    feedback[i] = AnswerType.WRONG; // O(1)
                 }
             }
         }
 
-        return new WordleWord(guess, feedback);
+        return new WordleWord(guess, feedback); // O(k)
     }
 }

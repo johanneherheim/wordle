@@ -61,14 +61,14 @@ public class WordleWordList {
 	 * 
 	 * @param feedback
 	 */
-	public void eliminateWords(WordleWord feedback) {
-		List<String> newPossibleAnswers = new ArrayList<>();
-		for (String s : possibleAnswers) {
-			if (WordleWord.isPossibleWord(s, feedback)) {
-				newPossibleAnswers.add(s);
+	public void eliminateWords(WordleWord feedback) { // O(m) * O(k)
+		List<String> newPossibleAnswers = new ArrayList<>(possibleAnswers.size()); // O(1)
+		for (String s : possibleAnswers) { // O(m)
+			if (WordleWord.isPossibleWord(s, feedback)) { // O(k)
+				newPossibleAnswers.add(s); // O(1)
 			}
 		}
-		possibleAnswers = newPossibleAnswers;
+		possibleAnswers = newPossibleAnswers; // O(1)
 	}
 
 	/**
