@@ -14,11 +14,9 @@ public class MyStrategy implements IStrategy {
 
     private Dictionary dictionary;
     private WordleWordList guesses;
-    private FrequencyStrategy frequencyStrategy;
 
     public MyStrategy(Dictionary dictionary) {
         this.dictionary = dictionary;
-        this.frequencyStrategy = new FrequencyStrategy(dictionary);
         reset();
     }
 
@@ -35,41 +33,26 @@ public class MyStrategy implements IStrategy {
             return possibleWords.get(0);
         }
 
-        String guess = findBestWord(possibleWords);
-
-        return guess;
+        return findBestWord(possibleWords);
     }
 
+    /**
+     * Finds the best word to guess from the list of possible words based on
+     * frequency analysis.
+     * 
+     * @param possibleWords a list of potential words to consider for guessing
+     * @return the word with the highest score based on letter frequency and
+     *         uniqueness
+     */
     private String findBestWord(List<String> possibleWords) { // O(m*k)
-        HashMap<Character, Integer>[] frequency = frequencyStrategy.getFrequencyForEachPos(possibleWords); // O(m*k)
+        HashMap<Character, Integer>[] frequency = FrequencyStrategy.getFrequencyForEachPos(possibleWords); // O(m*k)
         String bestWord = null;
         int bestScore = 0;
         // lagrer alle ord med høyest score i denne lista
         List<String> bestWords = new ArrayList<>();
 
         for (String word : possibleWords) { // O(m) * O(k)
-            int score = 0;
-            boolean hasDuplicateLetters = false;
-            HashSet<Character> uniqueLetters = new HashSet<>();
-
-            for (int i = 0; i < word.length(); i++) { // O(k)
-                char letter = word.charAt(i);
-                // øker score med frequency
-                score += frequency[i].getOrDefault(letter, 0);
-
-                // returnerer true hvis bokstaven ikke fantes i hashset
-                if (!uniqueLetters.add(letter)) {
-                    hasDuplicateLetters = true;
-                }
-            }
-
-            // bonuspoeng for antall unike bokstaver
-            score += uniqueLetters.size();
-
-            // deler score på 2 ved dobble konsonanter
-            if (hasDuplicateLetters) {
-                score /= 2;
-            }
+            int score = giveScoreToWord(word, frequency);
 
             // bytte verdier for bestescores
             if (score > bestScore) {
@@ -82,16 +65,47 @@ public class MyStrategy implements IStrategy {
             }
         }
 
-        // ved mange mulige ord, vil vi ikke gjenbruke grønne bokstaver
+        // ved mange mulige ord, bruker jeg ikke det første ordet med best score
         if (possibleWords.size() > possibleWords.get(0).length()) {
             return getEliminationWord(bestWords);
         }
         return bestWord;
     }
 
+    private int giveScoreToWord(String word, HashMap<Character, Integer>[] frequency) {
+        int score = 0;
+
+        boolean hasDuplicateLetters = false;
+        HashSet<Character> uniqueLetters = new HashSet<>();
+
+        for (int i = 0; i < word.length(); i++) { // O(k)
+            char letter = word.charAt(i);
+            // øker score med frequency
+            score += frequency[i].getOrDefault(letter, 0);
+
+            // returnerer true hvis bokstaven ikke fantes i hashset
+            if (!uniqueLetters.add(letter)) {
+                hasDuplicateLetters = true;
+            }
+        }
+
+        // bonuspoeng for antall unike bokstaver
+        score += uniqueLetters.size();
+
+        // deler score på 2 ved dobble konsonanter
+        if (hasDuplicateLetters) {
+            score /= 2;
+        }
+
+        return score;
+    }
+
     /**
      * 
-     * @param bestWords
+     * Selects the word that minimizes the maximum number of remaining possibilities
+     * in the worst-case scenario.
+     * 
+     * @param bestWords a list of the best scoring words
      * @return returns the word with best worst-case scenario
      */
     private String getEliminationWord(List<String> bestWords) {

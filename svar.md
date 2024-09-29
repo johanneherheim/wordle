@@ -47,4 +47,4 @@ I started with the frequency-strategy, and made improvements to it.
 2. i added bonus point for unique letters, this improved the score from 3.6 to 3.595
 3. i added a method that uses eliminationwords if many words score the same score. This improved the score from 3.595 to 3.545.
 
-When i was at step 2, i realised that somtimes the ai had four green letters, but there was many possible words left, and therfore i figured it would be better to guess a word that we know is wrong, but has many of the letters we dont know, but are included in the possible words. This is why i added the eliminationwords method.
+When i was at step 2, i realised that somtimes the ai had four green letters, but there was many possible words left, and therfore i figured it would be better to guess a word that we know is wrong, but has many of the letters we dont know, but are included in the possible words. This is why i added the eliminationwords method. This method takes use of the words with best score, and then chooses the word that has the best worst-case scenario.
