@@ -24,16 +24,16 @@ public class MyStrategy implements IStrategy {
     public String makeGuess(WordleWord feedback) { // O(m * k), same as frequencyStrategy
 
         if (feedback != null) {
-            guesses.eliminateWords(feedback);
+            guesses.eliminateWords(feedback); // O(m) * O(k) = O(m * k)
         }
 
-        List<String> possibleWords = guesses.possibleAnswers();
+        List<String> possibleWords = guesses.possibleAnswers(); // O(1)
 
-        if (possibleWords.size() == 1) {
-            return possibleWords.get(0);
+        if (possibleWords.size() == 1) { // O(1)
+            return possibleWords.get(0); // O(1)
         }
 
-        return findBestWord(possibleWords);
+        return findBestWord(possibleWords); // O(m * k)
     }
 
     /**
@@ -44,15 +44,16 @@ public class MyStrategy implements IStrategy {
      * @return the word with the highest score based on letter frequency and
      *         uniqueness
      */
-    private String findBestWord(List<String> possibleWords) { // O(m*k)
-        HashMap<Character, Integer>[] frequency = FrequencyStrategy.getFrequencyForEachPos(possibleWords); // O(m*k)
+    private String findBestWord(List<String> possibleWords) { // O(m * k)
+        HashMap<Character, Integer>[] frequency = FrequencyStrategy.getFrequencyForEachPos(possibleWords); // O(m * k)
         String bestWord = null;
         int bestScore = 0;
         // lagrer alle ord med høyest score i denne lista
         List<String> bestWords = new ArrayList<>();
+        final int bestWordsLengthLimit = 10;
 
-        for (String word : possibleWords) { // O(m) * O(k)
-            int score = giveScoreToWord(word, frequency);
+        for (String word : possibleWords) { // O(m) * O(k) = O(m * k)
+            int score = giveScoreToWord(word, frequency); // O(k)
 
             // bytte verdier for bestescores
             if (score > bestScore) {
@@ -63,37 +64,52 @@ public class MyStrategy implements IStrategy {
             } else if (score == bestScore) {
                 bestWords.add(word);
             }
+            if (bestWords.size() >= bestWordsLengthLimit) {
+                break;
+            }
         }
 
         // ved mange mulige ord, bruker jeg ikke det første ordet med best score
-        if (possibleWords.size() > possibleWords.get(0).length()) {
-            return getEliminationWord(bestWords);
+        if (possibleWords.size() > possibleWords.get(0).length()) { // O(1)
+            return getEliminationWord(bestWords); // O(j * m * k) where j < 10
         }
         return bestWord;
     }
 
-    private int giveScoreToWord(String word, HashMap<Character, Integer>[] frequency) {
+    /**
+     * Calculates the score for a given word based on its frequency and uniqueness
+     * of letters.
+     * The score is calculated by adding the frequency of each letter in the word
+     * and adding bonus points for the number of unique letters.
+     * If the word contains duplicate letters, the score is divided by 2.
+     *
+     * @param word      the word for which the score is calculated
+     * @param frequency an array of hash maps representing the frequency of each
+     *                  letter at each position in the word
+     * @return the score for the given word
+     */
+    private int giveScoreToWord(String word, HashMap<Character, Integer>[] frequency) { // O(k)
         int score = 0;
 
         boolean hasDuplicateLetters = false;
         HashSet<Character> uniqueLetters = new HashSet<>();
 
         for (int i = 0; i < word.length(); i++) { // O(k)
-            char letter = word.charAt(i);
+            char letter = word.charAt(i); // O(1)
             // øker score med frequency
-            score += frequency[i].getOrDefault(letter, 0);
+            score += frequency[i].getOrDefault(letter, 0); // O(1)
 
             // returnerer true hvis bokstaven ikke fantes i hashset
-            if (!uniqueLetters.add(letter)) {
-                hasDuplicateLetters = true;
+            if (!uniqueLetters.add(letter)) { // O(1)
+                hasDuplicateLetters = true; // O(1)
             }
         }
 
         // bonuspoeng for antall unike bokstaver
-        score += uniqueLetters.size();
+        score += uniqueLetters.size(); // O(1)
 
         // deler score på 2 ved dobble konsonanter
-        if (hasDuplicateLetters) {
+        if (hasDuplicateLetters) { // O(1)
             score /= 2;
         }
 
@@ -108,39 +124,39 @@ public class MyStrategy implements IStrategy {
      * @param bestWords a list of the best scoring words
      * @return returns the word with best worst-case scenario
      */
-    private String getEliminationWord(List<String> bestWords) {
+    private String getEliminationWord(List<String> bestWords) { // O(j * m * k) where j <= 10
         // representerer den minste av den største feedbackgruppen for alle gjett
         int minRemainingWords = guesses.possibleAnswers().size();
         String bestGuess = null;
 
         // itererer gjennom alle de beste ordene
-        for (String guess : bestWords) {
+        for (String guess : bestWords) { // O(j) * O(m * k)
 
             // størrelse på hver feedback-gruppe representerer worst-case gjenværenede ord
             HashMap<WordleWord, List<String>> feedbackGroups = new HashMap<>();
 
             // hvert gjett blir sammenlignet med alle mulige svar
-            for (String possible : guesses.possibleAnswers()) {
+            for (String possible : guesses.possibleAnswers()) { // O(m * k)
                 // genererer feedback for hvert par med gjett-muligsvar
-                WordleWord feedback = WordleAnswer.matchWord(guess, possible);
+                WordleWord feedback = WordleAnswer.matchWord(guess, possible); // O(k)
 
                 // alle svar med samme feedback blir gruppert sammen
-                if (!feedbackGroups.containsKey(feedback)) {
-                    feedbackGroups.put(feedback, new ArrayList<>());
+                if (!feedbackGroups.containsKey(feedback)) { // O(k)
+                    feedbackGroups.put(feedback, new ArrayList<>()); // O(1)
                 }
-                feedbackGroups.get(feedback).add(possible);
+                feedbackGroups.get(feedback).add(possible); // O(1)
             }
 
-            int maxRemaining = 0;
+            int maxRemainingWords = 0;
             // for hvert gjett vil vi finne den minste feedbackgruppen
-            for (List<String> group : feedbackGroups.values()) {
-                if (group.size() > maxRemaining) {
-                    maxRemaining = group.size();
+            for (List<String> group : feedbackGroups.values()) { // O(m)
+                if (group.size() > maxRemainingWords) {
+                    maxRemainingWords = group.size();
                 }
             }
 
-            if (maxRemaining < minRemainingWords) {
-                minRemainingWords = maxRemaining;
+            if (maxRemainingWords < minRemainingWords) {
+                minRemainingWords = maxRemainingWords;
                 bestGuess = guess;
             }
         }

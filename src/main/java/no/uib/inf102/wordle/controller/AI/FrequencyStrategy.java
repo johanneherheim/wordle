@@ -2,7 +2,6 @@ package no.uib.inf102.wordle.controller.AI;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import no.uib.inf102.wordle.model.Dictionary;
 import no.uib.inf102.wordle.model.word.WordleWord;
@@ -35,19 +34,26 @@ public class FrequencyStrategy implements IStrategy {
             return possibleWords.get(0); // O(1)
         }
 
-        return findBestWord(possibleWords); // O(m*k)
+        return findBestWord(possibleWords); // O(m * k)
     }
 
-    private String findBestWord(List<String> possibleAnswers) { // O(m*k)
+    /**
+     * Finds the best word from a list of possible answers based on their frequency
+     * score.
+     *
+     * @param possibleAnswers the list of possible answers
+     * @return the highest scoring word
+     */
+    private String findBestWord(List<String> possibleAnswers) { // O(m * k)
         HashMap<Character, Integer>[] frequency = getFrequencyForEachPos(possibleAnswers); // O(m*k)
 
         // her lagrer jeg beste score og word til å sammenligne resten
         String bestWord = null;
         int bestScore = 0;
 
-        for (String word : possibleAnswers) { // O(m)
+        for (String word : possibleAnswers) { // O(m) * O(k)
 
-            int score = giveScoreToWord(word, frequency);
+            int score = giveScoreToWord(word, frequency); // O(k)
 
             if (score > bestScore) {
                 bestScore = score;
@@ -66,7 +72,7 @@ public class FrequencyStrategy implements IStrategy {
      * @param frequency an array of frequency maps for each position
      * @return the calculated score for the word
      */
-    private int giveScoreToWord(String word, HashMap<Character, Integer>[] frequency) {
+    private int giveScoreToWord(String word, HashMap<Character, Integer>[] frequency) { // O(k)
         int score = 0;
 
         // sum of all values in frequency hashMap
@@ -82,12 +88,13 @@ public class FrequencyStrategy implements IStrategy {
      * Calculates the frequency of letters in each position for the given list of
      * words.
      * 
-     * @param possibleWords a list of potential words to analyze
+     * @param possibleWords a list of words to analyze
      * @return an array of frequency maps, where each map contains the frequency of
      *         letters at a specific position
      */
     static HashMap<Character, Integer>[] getFrequencyForEachPos(List<String> possibleWords) { // O(m*k)
         int wordLength = possibleWords.get(0).length();
+        @SuppressWarnings("unchecked")
         HashMap<Character, Integer>[] frequency = new HashMap[wordLength];
 
         // Initialiserer frequency hashmap for hver posisjon i ordet
@@ -96,7 +103,7 @@ public class FrequencyStrategy implements IStrategy {
         }
 
         // fyller ut hashmap for hver posisjon
-        for (String word : possibleWords) { // O(m)
+        for (String word : possibleWords) { // O(m) * O(k)
             for (int i = 0; i < word.length(); i++) { // O(k)
                 char letter = word.charAt(i);
                 frequency[i].put(letter, frequency[i].getOrDefault(letter, 0) + 1);

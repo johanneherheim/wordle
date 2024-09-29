@@ -82,9 +82,9 @@ public class WordleAnswer {
      * 
      * @param guess
      * @param answer
-     * @return
+     * @return WordleWord object of the result for the guess and
      */
-    public static WordleWord matchWord(String guess, String answer) {
+    public static WordleWord matchWord(String guess, String answer) { // O(k)
         int wordLength = answer.length(); // O(1)
         if (guess.length() != wordLength) // O(1)
             throw new IllegalArgumentException("Guess and answer must have same number of letters but guess = " + guess
