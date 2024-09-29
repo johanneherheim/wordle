@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import no.uib.inf102.wordle.model.Dictionary;
+import no.uib.inf102.wordle.model.word.WordleAnswer;
 import no.uib.inf102.wordle.model.word.WordleWord;
 import no.uib.inf102.wordle.model.word.WordleWordList;
 
@@ -43,6 +44,7 @@ public class MyStrategy implements IStrategy {
         HashMap<Character, Integer>[] frequency = frequencyStrategy.getFrequencyForEachPos(possibleWords); // O(m*k)
         String bestWord = null;
         int bestScore = 0;
+        // lagrer alle ord med høyest score i denne lista
         List<String> bestWords = new ArrayList<>();
 
         for (String word : possibleWords) { // O(m) * O(k)
@@ -52,19 +54,24 @@ public class MyStrategy implements IStrategy {
 
             for (int i = 0; i < word.length(); i++) { // O(k)
                 char letter = word.charAt(i);
+                // øker score med frequency
                 score += frequency[i].getOrDefault(letter, 0);
 
+                // returnerer true hvis bokstaven ikke fantes i hashset
                 if (!uniqueLetters.add(letter)) {
                     hasDuplicateLetters = true;
                 }
             }
 
-            score += uniqueLetters.size(); // bonuspoeng
+            // bonuspoeng for antall unike bokstaver
+            score += uniqueLetters.size();
 
+            // deler score på 2 ved dobble konsonanter
             if (hasDuplicateLetters) {
-                score /= 2; // minuspoeng
+                score /= 2;
             }
 
+            // bytte verdier for bestescores
             if (score > bestScore) {
                 bestScore = score;
                 bestWord = word;
@@ -75,65 +82,56 @@ public class MyStrategy implements IStrategy {
             }
         }
 
-        if (possibleWords.size() > 2) {
-            System.out.println("EliminationWord ...");
-            return getEliminationWord(bestWords); // O(m*k)
+        // ved mange mulige ord, vil vi ikke gjenbruke grønne bokstaver
+        if (possibleWords.size() > possibleWords.get(0).length()) {
+            return getEliminationWord(bestWords);
         }
-        System.out.println("bestword:" + bestWord);
         return bestWord;
     }
 
-    private String getEliminationWord(List<String> bestWords) { // O(m*k)
-        int minRemaining = Integer.MAX_VALUE;
+    /**
+     * 
+     * @param bestWords
+     * @return returns the word with best worst-case scenario
+     */
+    private String getEliminationWord(List<String> bestWords) {
+        // representerer den minste av den største feedbackgruppen for alle gjett
+        int minRemainingWords = guesses.possibleAnswers().size();
         String bestGuess = null;
 
-        for (String guess : bestWords) { // O(j), less than O(m) but varies
-            HashMap<String, List<String>> feedbackGroups = new HashMap<>();
+        // itererer gjennom alle de beste ordene
+        for (String guess : bestWords) {
 
-            for (String possible : guesses.possibleAnswers()) { // O(m)
-                String feedback = generateFeedback(guess, possible); // O(k)
-                feedbackGroups.putIfAbsent(feedback, new ArrayList<>());
+            // størrelse på hver feedback-gruppe representerer worst-case gjenværenede ord
+            HashMap<WordleWord, List<String>> feedbackGroups = new HashMap<>();
+
+            // hvert gjett blir sammenlignet med alle mulige svar
+            for (String possible : guesses.possibleAnswers()) {
+                // genererer feedback for hvert par med gjett-muligsvar
+                WordleWord feedback = WordleAnswer.matchWord(guess, possible);
+
+                // alle svar med samme feedback blir gruppert sammen
+                if (!feedbackGroups.containsKey(feedback)) {
+                    feedbackGroups.put(feedback, new ArrayList<>());
+                }
                 feedbackGroups.get(feedback).add(possible);
             }
 
-            int maxRemaining = feedbackGroups.values().stream().mapToInt(List::size).max().orElse(0);
+            int maxRemaining = 0;
+            // for hvert gjett vil vi finne den minste feedbackgruppen
+            for (List<String> group : feedbackGroups.values()) {
+                if (group.size() > maxRemaining) {
+                    maxRemaining = group.size();
+                }
+            }
 
-            if (maxRemaining < minRemaining) {
-                minRemaining = maxRemaining;
+            if (maxRemaining < minRemainingWords) {
+                minRemainingWords = maxRemaining;
                 bestGuess = guess;
             }
         }
-
+        // returnerer det ordet som har best mulig worst-case scenario
         return bestGuess;
-    }
-
-    private String generateFeedback(String guess, String possible) { // O(k)
-        StringBuilder feedback = new StringBuilder("-----");
-
-        boolean[] guessed = new boolean[5];
-        boolean[] actual = new boolean[5];
-
-        for (int i = 0; i < guess.length(); i++) {
-            if (guess.charAt(i) == possible.charAt(i)) {
-                feedback.setCharAt(i, 'G');
-                guessed[i] = true;
-                actual[i] = true;
-            }
-        }
-
-        for (int i = 0; i < guess.length(); i++) {
-            if (!guessed[i]) {
-                for (int j = 0; j < possible.length(); j++) {
-                    if (!actual[j] && guess.charAt(i) == possible.charAt(j)) {
-                        feedback.setCharAt(i, 'Y');
-                        actual[j] = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return feedback.toString();
     }
 
     @Override
